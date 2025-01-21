@@ -14,6 +14,7 @@ const Panel = ({ matriz }) => {
     width: '20px',
     height: '20px',
     backgroundColor: '#fff',
+
     border: '1px solid #222',  // Borde para que se vea claramente
   };
 
