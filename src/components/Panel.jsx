@@ -1,4 +1,5 @@
 import React from 'react';
+import { colorPieza} from '../lib/funciones';
 
 const Panel = ({ matriz }) => {
   // Estilos en línea para el panel
@@ -20,7 +21,7 @@ const Panel = ({ matriz }) => {
 
   const celdaOcupadaStyle = {
     ...celdaStyle,
-    backgroundColor: '#054', // Color para las celdas ocupadas
+    backgroundColor: colorPieza(10), // Color para las celdas ocupadas
   };
 
   return (

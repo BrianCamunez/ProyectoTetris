@@ -1,6 +1,6 @@
 import React from 'react';
 import modeloPieza from '../lib/modeloPieza';
-import colorPieza from "../lib/funciones";
+import {colorPieza} from "../lib/funciones";
 
 const Piezas = () => {
   // Crear la instancia de pieza
@@ -29,7 +29,6 @@ const Piezas = () => {
   return (
     <div>
       <h2>Lista de Piezas con sus Rotaciones</h2>
-
       {/* Mostrar pieza 1 */}
       <div style={{ marginBottom: '20px' }}>
         <h3>Pieza 1</h3>
@@ -39,11 +38,12 @@ const Piezas = () => {
           {renderizarMatriz(pieza1.matriz)}
         </div>
       </div>
-       {/* Mostrar pieza 1 */}
-       <div style={{ marginBottom: '20px' }}>
-        <h3>Pieza 1</h3>
+
+      {/* Mostrar pieza 2 */}
+      <div style={{ marginBottom: '20px' }}>
+        <h3>Pieza 2</h3>
         
-        {/* Renderizar la matriz de la pieza 1 */}
+        {/* Renderizar la matriz de la pieza 2 */}
         <div style={{ display: 'inline-block', margin: '5px' }}>
           {renderizarMatriz(pieza2.matriz)}
         </div>

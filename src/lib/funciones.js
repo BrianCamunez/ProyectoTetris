@@ -1,4 +1,4 @@
-function colorPieza(numero) {
+export function colorPieza(numero) {
     const colores = [
         "bg-white",
         "bg-black",
@@ -9,9 +9,8 @@ function colorPieza(numero) {
         "bg-warning",
         "bg-info",
         "bg-dark",
-        "bg-black"  
+        "bg-black",
+        "#054"
     ];
     return colores[numero];
 }
-
-export default colorPieza
