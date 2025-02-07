@@ -131,7 +131,7 @@ const Tabla = () => {
         <thead className="table-dark">
           <tr>
             <th onClick={() => ordenarDatos("jugador")} style={{ cursor: "pointer" }}>
-              Jugador
+              Jugador icono=<i className="bi bi-arrow-up" style={{ color: "#ffffff"}}></i>
             </th>
             <th onClick={() => ordenarDatos("puntaje")} style={{ cursor: "pointer" }}>
               Puntaje

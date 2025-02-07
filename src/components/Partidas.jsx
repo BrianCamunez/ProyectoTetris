@@ -124,6 +124,7 @@ const Partidas = () => {
   return (
     <div className="container mt-5">
       <h1 className="mb-4">Lista de Partidas de Tetris</h1>
+      <i className="bi bi-arrow-up" style={{ fontSize: "20px" }}></i>
       <button className="btn btn-primary mb-3" onClick={abrirModal}>
         Añadir Nueva Partida
       </button>
@@ -131,9 +132,9 @@ const Partidas = () => {
         <thead className="table-dark">
           <tr>
             <th onClick={() => ordenarDatos("jugador")} style={{ cursor: "pointer" }}>
-              Jugador
+              Jugador <i className="bi bi-arrow-up" style={{ color: "#ffffff", fontSize: "20px" }}></i>
             </th>
-            <th onClick={() => ordenarDatos("puntaje")} style={{ cursor: "pointer" }}>
+            <th onClick={() => ordenarDatos("puntaje")} style={{ cursor: "pointer"}}>
               Puntaje
             </th>
             <th onClick={() => ordenarDatos("lineasEliminadas")} style={{ cursor: "pointer" }}>
