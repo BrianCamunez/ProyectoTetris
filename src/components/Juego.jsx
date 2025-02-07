@@ -16,10 +16,13 @@ const Juego = () => {
     function pintarPieza(){
         const copiaArray = [...arrayCasillas];
         piezaActual.matriz.forEach((fila, indexFila) => {
+            console.log(fila);
             fila.forEach((celda, indexColumna) => {
-                if(celda !== 0){
+                console.log(celda);
+                if (celda !== 0) {
                     copiaArray[piezaActual.fila + indexFila][piezaActual.columna + indexColumna] = celda;
                 }
+                console.log(celda);
             });
         });
         return copiaArray;

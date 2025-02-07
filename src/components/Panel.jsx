@@ -1,5 +1,5 @@
 import React from 'react';
-import { colorPieza} from '../lib/funciones';
+import { colorPieza } from '../lib/funciones';
 
 const Panel = ({ matriz }) => {
   // Estilos en línea para el panel
@@ -11,29 +11,16 @@ const Panel = ({ matriz }) => {
     backgroundColor: '#222',
   };
 
-  const celdaStyle = {
-    width: '20px',
-    height: '20px',
-    backgroundColor: '#fff',
-
-    border: '1px solid #222',  // Borde para que se vea claramente
-  };
-
-  const celdaOcupadaStyle = {
-    ...celdaStyle,
-    backgroundColor: colorPieza(10), // Color para las celdas ocupadas
-  };
-
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
       <div style={panelStyle}>
         {matriz.map((fila, indexFila) => (
-          // Cada fila debe contener 12 celdas
           fila.map((celda, indexColumna) => (
             <div
-              key={indexFila * 12 + indexColumna}  // Clave única para cada celda
-              style={celda !== 0 ? celdaOcupadaStyle : celdaStyle}
-            />
+            key={indexFila * 12 + indexColumna}
+            className={`border ${celda !== 0 ? colorPieza(celda) : 'bg-white'}`} // Usa clases en lugar de `backgroundColor`
+            style={{ width: '20px', height: '20px' }}
+          />
           ))
         ))}
       </div>
