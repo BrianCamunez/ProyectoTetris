@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Panel from "./Panel"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import modelos from "../lib/modelos";
 import Piezas from './Pieza';
 import modeloPieza from '../lib/modeloPieza';
@@ -35,6 +35,42 @@ const Juego = () => {
         const nuevaMatriz = pintarPieza();
         setArrayCasillas(nuevaMatriz);
     };
+
+    useEffect(() => {
+        // Definir el manejador de eventos
+        const controlTeclas = (event) => {
+            switch (event.key) {
+                case "ArrowRight":
+                    moverDra();
+                    break;
+                case "ArrowLeft":
+                    moverIzq();
+                    break;
+                case "ArrowDown":
+                    bajar();
+                    break;
+                case "ArrowUp":
+                    girar();
+                    break;
+                default:
+                    break;
+            }
+        };
+    
+        // Agregar el eventListener
+        window.addEventListener('keydown', controlTeclas);
+    
+        // Cleanup: eliminar el eventListener cuando el componente se desmonte
+        return () => {
+            window.removeEventListener('keydown', controlTeclas);
+        };
+    }, []); // Solo se ejecuta una vez al montar y desmontar el componente
+    
+    // Funciones de movimiento
+    const moverDra = () => console.log("Mover derecha");
+    const moverIzq = () => console.log("Mover izquierda");
+    const bajar = () => console.log("Bajar pieza");
+    const girar = () => console.log("Girar pieza");
 
     return(
         <div className="container mt-5">
