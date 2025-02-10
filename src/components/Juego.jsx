@@ -50,9 +50,23 @@ const Juego = () => {
     const insertaNuevaPieza = () => {
         const nuevaPieza = new modeloPieza();
         setPiezaActual(nuevaPieza);
-        const nuevaMatriz = pintarPieza(nuevaPieza);  // Limpia la pieza y luego pinta la nueva.
-        setArrayCasillas(nuevaMatriz);
+    
+        setArrayCasillas(prevMatriz => {
+            const nuevaMatriz = prevMatriz.map(fila => fila.slice()); // Copia la matriz sin borrar lo anterior
+            nuevaPieza.matriz.forEach((fila, indexFila) => {
+                fila.forEach((celda, indexColumna) => {
+                    const filaJuego = nuevaPieza.fila + indexFila;
+                    const columnaJuego = nuevaPieza.columna + indexColumna;
+    
+                    if (filaJuego >= 0 && filaJuego < nuevaMatriz.length && columnaJuego >= 0 && columnaJuego < nuevaMatriz[0].length && celda !== 0) {
+                        nuevaMatriz[filaJuego][columnaJuego] = celda; // Agrega la nueva pieza sin borrar lo anterior
+                    }
+                });
+            });
+            return nuevaMatriz;
+        });
     };
+    
 
     // Control de teclas
     useEffect(() => {
