@@ -9,6 +9,7 @@ const Juego = () => {
     const [piezaActual, setPiezaActual] = useState(() => new modeloPieza());
     const [intervaloMovimiento, setIntervaloMovimiento] = useState(null);
     const [jugando, setJugando] = useState(false);
+    const [puntos, setPuntos] = useState(0); 
 
     // Limpiar la pieza anterior en su posición actual
     function limpiarPieza() {
@@ -88,12 +89,17 @@ const Juego = () => {
         setJugando(true); // Activamos el estado "jugando"
     };
 
+    const sumarPuntos = (cantidad) => {
+        setPuntos((prevPuntos) => prevPuntos + cantidad); // Sumamos los puntos recibidos
+    };
+
     // Funciones de movimiento
     const moverDra = () => {
         setPiezaActual((prevPieza) => {
             const nuevaPieza = { ...prevPieza, columna: prevPieza.columna + 1 };
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
+            sumarPuntos(10);
             return nuevaPieza;
         });
     };
@@ -103,6 +109,7 @@ const Juego = () => {
             const nuevaPieza = { ...prevPieza, columna: prevPieza.columna - 1 };
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
+            sumarPuntos(10);
             return nuevaPieza;
         });
     };
@@ -112,6 +119,10 @@ const Juego = () => {
             const nuevaPieza = { ...prevPieza, fila: prevPieza.fila + 1 };
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
+            sumarPuntos(10);
+            if(jugando == false){
+                sumarPuntos(50);
+            }
             return nuevaPieza;
         });
     };
@@ -130,6 +141,7 @@ const Juego = () => {
             
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
+            sumarPuntos(20);
             return nuevaPieza;
         });
     };
@@ -170,6 +182,9 @@ const Juego = () => {
             <Panel matriz={arrayCasillas}/>
             <button className="btn btn-primary mt-3" onClick={iniciarMovimiento}>JUGAR</button>
             <button className="btn btn-primary mt-3" onClick={insertaNuevaPieza}>Insertar Nueva Pieza</button>
+            <div className="mt-4 text-center">
+                <h3>Puntos: {puntos}</h3> {/* Mostrar los puntos */}
+            </div>
         </div>
     );
 };
