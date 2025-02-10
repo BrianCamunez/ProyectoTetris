@@ -121,8 +121,19 @@ const Juego = () => {
     };
 
     const girar = () => {
-        // Aquí deberías implementar la lógica para girar la pieza
-        console.log("Girar pieza");
+        const nuevaPieza = new modeloPieza();
+        nuevaPieza.numero = piezaActual.numero;
+        nuevaPieza.nombre = piezaActual.nombre;
+        nuevaPieza.angulo = piezaActual.angulo;
+        nuevaPieza.fila = piezaActual.fila;
+        nuevaPieza.columna = piezaActual.columna;
+        nuevaPieza.matriz = piezaActual.matriz;
+        
+        nuevaPieza.girar(); // Llamar al método girar
+        
+        setPiezaActual(nuevaPieza);
+        const nuevaMatriz = pintarPieza(nuevaPieza);
+        setArrayCasillas(nuevaMatriz);
     };
 
     return(

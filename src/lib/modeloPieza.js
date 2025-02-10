@@ -9,7 +9,7 @@ class modeloPieza {
      matriz = modelos.piezas[this.numero].rotaciones[this.angulo]
 
      girar() {
-         this.angulo = this.angulo++
+         this.angulo++
          if(this.angulo == 4){
              this.angulo = 0
          }
