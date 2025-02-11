@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Panel from "./Panel";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import modelos from "../lib/modelos";
 import modeloPieza from '../lib/modeloPieza';
 
