@@ -94,43 +94,45 @@ const Juego = () => {
 
     const moverDra = () => {
         setPiezaActual((prevPieza) => {
-            const nuevaPieza = { ...prevPieza, columna: prevPieza.columna + 1 }; // Mover hacia la derecha
+            let tableroSinPieza = limpiarPieza(); // Eliminar la pieza actual del tablero
+            const nuevaPieza = { ...prevPieza, columna: prevPieza.columna + 1 };
     
-            // Verificar si hay colisión antes de mover
-            if (hayColision(nuevaPieza)) {
+            // Verificar colisión con el tablero limpio
+            if (hayColision(nuevaPieza, tableroSinPieza)) {
                 console.log("No se puede mover hacia la derecha debido a una colisión.");
                 return prevPieza; // No mueve la pieza si hay colisión
             }
     
-            // Si no hay colisión, pintamos la nueva posición de la pieza
+            // Si no hay colisión, pintar la nueva posición
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
             sumarPuntos(10);
             return nuevaPieza;
         });
-    };
+    }; 
 
     const moverIzq = () => {
         setPiezaActual((prevPieza) => {
-            const nuevaPieza = { ...prevPieza, columna: prevPieza.columna - 1 }; // Mover hacia la izquierda
+            const tableroSinPieza = limpiarPieza();
+            const nuevaPieza = { ...prevPieza, columna: prevPieza.columna - 1 };
     
-            // Verificar si hay colisión antes de mover
-            if (hayColision(nuevaPieza)) {
+            if (hayColision(nuevaPieza, tableroSinPieza)) {
                 console.log("No se puede mover hacia la izquierda debido a una colisión.");
-                return prevPieza; // No mueve la pieza si hay colisión
+                return prevPieza;
             }
     
-            // Si no hay colisión, pintamos la nueva posición de la pieza
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
             sumarPuntos(10);
             return nuevaPieza;
         });
     };
+    
 
     const girar = () => {
         setPiezaActual((prevPieza) => {
             const nuevaPieza = new modeloPieza();
+            const tableroSinPieza = limpiarPieza();
             nuevaPieza.numero = prevPieza.numero;
             nuevaPieza.nombre = prevPieza.nombre;
             nuevaPieza.angulo = prevPieza.angulo;
@@ -142,7 +144,7 @@ const Juego = () => {
             nuevaPieza.girar();
     
             // Verificar si la nueva rotación tiene colisión
-            if (hayColision(nuevaPieza)) {
+            if (hayColision(nuevaPieza, tableroSinPieza)) {
                 console.log("No se puede girar la pieza debido a una colisión.");
                 return prevPieza; // No rota la pieza si hay colisión
             }
@@ -158,32 +160,24 @@ const Juego = () => {
 
     const bajar = () => {
         setPiezaActual((prevPieza) => {
-            // Creamos una nueva pieza con la fila incrementada para bajarla
-            const nuevaPieza = { ...prevPieza, fila: prevPieza.fila + 1 }; 
+            const nuevaPieza = { ...prevPieza, fila: prevPieza.fila + 1 };
     
-            // Limpiar la pieza anterior antes de comprobar la colisión
-            const nuevaMatriz = pintarPieza(nuevaPieza); // Limpiar la pieza anterior y pintar la nueva
-    
-            // Verificar si hay colisión antes de mover la pieza
-            if (hayColision(nuevaPieza)) {
-                console.log("No se puede bajar la pieza debido a una colisión.");
-                return prevPieza; // Si hay colisión, no mover la pieza
+            if (hayColision(nuevaPieza, limpiarPieza())) {
+                console.log("No se puede bajar más.");
+                return prevPieza;
             }
     
-            // Si no hay colisión, actualizamos el estado con la nueva matriz
+            const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
-    
-            // Sumamos puntos por el movimiento
             sumarPuntos(10);
-    
-            // Retornamos la nueva pieza para actualizar su estado
             return nuevaPieza;
         });
     };
     
     
+    
 
-    const hayColision = (pieza) => {
+    const hayColision = (pieza, matrizTemporal = arrayCasillas) => {
         for (let fila = 0; fila < pieza.matriz.length; fila++) {
             for (let columna = 0; columna < pieza.matriz[fila].length; columna++) {
                 if (pieza.matriz[fila][columna] !== 0) {
@@ -191,23 +185,21 @@ const Juego = () => {
                     const columnaJuego = pieza.columna + columna;
     
                     // Verificamos si la pieza está fuera de los límites del tablero
-                    if (filaJuego < 0 || filaJuego >= arrayCasillas.length || columnaJuego < 0 || columnaJuego >= arrayCasillas[0].length) {
-                        console.log(`Colisión con los bordes del tablero en la posición (${filaJuego}, ${columnaJuego})`);
-                        return true; // Colisión con los bordes del tablero
+                    if (filaJuego < 0 || filaJuego >= matrizTemporal.length ||
+                        columnaJuego < 0 || columnaJuego >= matrizTemporal[0].length) {
+                        return true; // Colisión con los bordes
                     }
     
                     // Verificamos si la casilla ya está ocupada por otra pieza
-                    if (arrayCasillas[filaJuego][columnaJuego] !== 0) {
-                        console.log(arrayCasillas[filaJuego][columnaJuego])
-                        console.log(`Colisión con otra pieza en la posición (${filaJuego}, ${columnaJuego})`);
+                    if (matrizTemporal[filaJuego][columnaJuego] !== 0) {
                         return true; // Colisión con otra pieza
                     }
                 }
             }
         }
-        console.log("No hay colisión");
         return false; // No hay colisión
     };
+    
     
      
 
