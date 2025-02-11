@@ -10,6 +10,7 @@ const Juego = () => {
     const [intervaloMovimiento, setIntervaloMovimiento] = useState(null);
     const [jugando, setJugando] = useState(false);
     const [puntos, setPuntos] = useState(0); 
+    const [gameOver, setGameOver] = useState(false);
 
     // Limpiar la pieza anterior en su posición actual
     function limpiarPieza() {
@@ -54,8 +55,12 @@ const Juego = () => {
 
     // Función para insertar una nueva pieza
    const insertaNuevaPieza = () => {
-    if (jugando) return;
+    if (jugando || gameOver) return;
     const nuevaPieza = new modeloPieza();
+    if (hayColision(nuevaPieza, arrayCasillas)) {
+        finalizarJuego(); // Si no hay espacio, termina el juego
+        return;
+    }
     setPiezaActual(nuevaPieza);
 
     setArrayCasillas(prevMatriz => {
@@ -206,6 +211,7 @@ const Juego = () => {
     // Control de teclas
     useEffect(() => {
         const controlTeclas = (event) => {
+            if (gameOver) return;
             switch (event.key) {
                 case "ArrowRight":
                     moverDra();
@@ -233,12 +239,30 @@ const Juego = () => {
         };
     }, [piezaActual, arrayCasillas]);
 
+    const reiniciarJuego = () => {
+        setArrayCasillas(modelos.matriz); // Reinicia el tablero
+        setPiezaActual(new modeloPieza()); // Nueva pieza inicial
+        setGameOver(false);
+        setPuntos(0); // Reiniciar puntaje
+        setJugando(false);
+    };
+
+    const finalizarJuego = () => {
+        setJugando(false);
+        if (intervaloMovimiento) clearInterval(intervaloMovimiento);
+        setIntervaloMovimiento(null);
+        setGameOver(true);
+        alert("¡Game Over! No hay más espacio para nuevas piezas.");
+    };
+
     return(
         <div className="container mt-5">
             <h2 className="text-center border border-primary rounded p-3 mt-4 mb-4 bg-light">Aquí va el juego</h2>
+            {gameOver && <h2 className="text-center text-danger">¡Game Over!</h2>}
             <Panel matriz={arrayCasillas}/>
             <button className="btn btn-primary mt-3" onClick={iniciarMovimiento}>JUGAR</button>
             <button className="btn btn-primary mt-3" onClick={insertaNuevaPieza}>Insertar Nueva Pieza</button>
+            <button className="btn btn-danger mt-3" onClick={reiniciarJuego}>Reiniciar Juego</button>
             <div className="mt-4 text-center">
                 <h3>Puntos: {puntos}</h3> {/* Mostrar los puntos */}
             </div>
