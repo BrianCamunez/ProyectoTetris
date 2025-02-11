@@ -53,34 +53,63 @@ const Juego = () => {
         return copiaArray;
     }
 
-    // Función para insertar una nueva pieza
-   const insertaNuevaPieza = () => {
-    if (jugando || gameOver) return;
-    const nuevaPieza = new modeloPieza();
-    if (hayColision(nuevaPieza, arrayCasillas)) {
-        finalizarJuego(); // Si no hay espacio, termina el juego
-        return;
-    }
-    setPiezaActual(nuevaPieza);
-
-    setArrayCasillas(prevMatriz => {
-        const nuevaMatriz = prevMatriz.map(fila => fila.slice()); // Copia la matriz sin borrar lo anterior
-
-        // Pintar la nueva pieza sobre la matriz existente
-        nuevaPieza.matriz.forEach((fila, indexFila) => {
-            fila.forEach((celda, indexColumna) => {
-                const filaJuego = nuevaPieza.fila + indexFila;
-                const columnaJuego = nuevaPieza.columna + indexColumna;
-
-                if (filaJuego >= 0 && filaJuego < nuevaMatriz.length && columnaJuego >= 0 && columnaJuego < nuevaMatriz[0].length && celda !== 0) {
-                    nuevaMatriz[filaJuego][columnaJuego] = celda; // Coloca la nueva pieza en su lugar
+    // Función para verificar si hay colisión entre la pieza y el tablero
+    const fueraDeLimitesHorizontales = (pieza, arrayCasillas) => {
+        for (let fila = 0; fila < pieza.matriz.length; fila++) {
+            for (let columna = 0; columna < pieza.matriz[fila].length; columna++) {
+                if (pieza.matriz[fila][columna] !== 0) {
+                    const posicionColumna = pieza.columna + columna;
+                    // Asegúrate de que la columna no exceda los límites (bordes de las columnas)
+                    if (posicionColumna < 1 || posicionColumna >= arrayCasillas[0].length - 1) {
+                        return true;  // Está fuera del límite izquierdo o derecho (considerando los bordes)
+                    }
                 }
-            });
-        });
+            }
+        }
+        return false;  // No está fuera de los límites
+    };
+    
 
-        return nuevaMatriz; // Devuelve la nueva matriz con la pieza agregada
-    });
-};
+    // Función para insertar una nueva pieza
+    const insertaNuevaPieza = () => {
+        if (jugando || gameOver) return;
+    
+        let nuevaPieza = new modeloPieza();
+    
+        // Verificar si hay espacio para colocar la nueva pieza
+        if (hayColision(nuevaPieza, arrayCasillas)) {
+            finalizarJuego(); // Si ya no hay espacio para colocar la nueva pieza, termina el juego
+            return;
+        }
+    
+        // Verificamos si la pieza está dentro de los límites
+        while (fueraDeLimitesHorizontales(nuevaPieza, arrayCasillas)) {
+            nuevaPieza = new modeloPieza();  // Genera una nueva pieza
+        }
+    
+        // Ahora tenemos una pieza válida dentro de los límites
+        setPiezaActual(nuevaPieza);
+    
+        // Colocar la nueva pieza en el tablero
+        setArrayCasillas(prevMatriz => {
+            const nuevaMatriz = prevMatriz.map(fila => fila.slice()); // Copia la matriz sin borrar lo anterior
+    
+            // Colocar la nueva pieza
+            nuevaPieza.matriz.forEach((fila, indexFila) => {
+                fila.forEach((celda, indexColumna) => {
+                    const filaJuego = nuevaPieza.fila + indexFila;
+                    const columnaJuego = nuevaPieza.columna + indexColumna;
+    
+                    if (filaJuego >= 0 && filaJuego < nuevaMatriz.length && columnaJuego >= 0 && columnaJuego < nuevaMatriz[0].length && celda !== 0) {
+                        nuevaMatriz[filaJuego][columnaJuego] = celda; // Coloca la nueva pieza
+                    }
+                });
+            });
+    
+            return nuevaMatriz; // Devuelve la nueva matriz con la pieza colocada
+        });
+    };
+    
     // Función para iniciar el movimiento de la pieza
     const iniciarMovimiento = () => {
         if (intervaloMovimiento) {
@@ -169,6 +198,12 @@ const Juego = () => {
     
             if (hayColision(nuevaPieza, limpiarPieza())) {
                 console.log("No se puede bajar más.");
+                
+                setArrayCasillas((prevMatriz) => {
+                    const nuevaMatriz = pintarPieza(prevPieza);
+                    return nuevaMatriz;
+                });
+                insertaNuevaPieza();
                 return prevPieza;
             }
     
@@ -248,11 +283,13 @@ const Juego = () => {
     };
 
     const finalizarJuego = () => {
-        setJugando(false);
-        if (intervaloMovimiento) clearInterval(intervaloMovimiento);
-        setIntervaloMovimiento(null);
-        setGameOver(true);
-        alert("¡Game Over! No hay más espacio para nuevas piezas.");
+        if (!gameOver) {
+            setJugando(false);
+            if (intervaloMovimiento) clearInterval(intervaloMovimiento);
+            setIntervaloMovimiento(null);
+            setGameOver(true);
+            alert("¡Game Over! No hay más espacio para nuevas piezas.");
+        }
     };
 
     return(
