@@ -3,25 +3,27 @@ import Panel from "./Panel";
 import { useState, useEffect } from 'react';
 import modelos from "../lib/modelos";
 import modeloPieza from '../lib/modeloPieza';
+import {colorPieza} from "../lib/funciones";
 
 const Juego = () => {
     const [arrayCasillas, setArrayCasillas] = useState(modelos.matriz);
     const [piezaActual, setPiezaActual] = useState(() => new modeloPieza());
+    const [colaPiezas, setColaPiezas] = useState([new modeloPieza(), new modeloPieza(), new modeloPieza()])
     const [intervaloMovimiento, setIntervaloMovimiento] = useState(null);
     const [jugando, setJugando] = useState(false);
-    const [puntos, setPuntos] = useState(0); 
-    const [lineas,setLineas]= useState(0)
+    const [puntos, setPuntos] = useState(0);
+    const [lineas, setLineas] = useState(0)
     const [gameOver, setGameOver] = useState(false);
 
     // Limpiar la pieza anterior en su posición actual
     function limpiarPieza() {
         const copiaArray = arrayCasillas.map(fila => fila.slice()); // Crea una copia del tablero.
-    
+
         piezaActual.matriz.forEach((fila, indexFila) => {
             fila.forEach((celda, indexColumna) => {
                 const filaJuego = piezaActual.fila + indexFila;
                 const columnaJuego = piezaActual.columna + indexColumna;
-    
+
                 // Asegúrate de que la posición esté dentro de los límites del tablero
                 if (filaJuego >= 0 && filaJuego < copiaArray.length && columnaJuego >= 0 && columnaJuego < copiaArray[0].length) {
                     if (celda !== 0) {
@@ -30,70 +32,77 @@ const Juego = () => {
                 }
             });
         });
-    
+
         return copiaArray;
     }
-    
+
 
     // Pintar la pieza en su nueva posición
     function pintarPieza(nuevaPieza) {
         const copiaArray = limpiarPieza();
-    
+
         nuevaPieza.matriz.forEach((fila, indexFila) => {
             fila.forEach((celda, indexColumna) => {
                 const filaJuego = nuevaPieza.fila + indexFila;
                 const columnaJuego = nuevaPieza.columna + indexColumna;
-                
+
                 // Asegúrate de que la posición esté dentro de los límites del tablero
                 if (filaJuego >= 0 && filaJuego < copiaArray.length && columnaJuego >= 0 && columnaJuego < copiaArray[0].length && celda !== 0) {
                     copiaArray[filaJuego][columnaJuego] = celda; // Pinta la nueva posición de la pieza.
                 }
             });
         });
-        
+
         return copiaArray;
     }
-    
+
 
     // Función para insertar una nueva pieza
     const insertaNuevaPieza = () => {
         if (jugando || gameOver) return;
-    
-        let nuevaPieza = new modeloPieza();
+
+        let nuevaPieza = colaPiezas[0];
+
+        setColaPiezas(prevPiezas => {
+            const piezasActualizadas = [...prevPiezas]
+            piezasActualizadas.shift()
+            piezasActualizadas.push(new modeloPieza())
+            return piezasActualizadas
+        })
 
         nuevaPieza.columna = Math.max(1, Math.min(arrayCasillas[0].length - nuevaPieza.matriz[0].length - 1, nuevaPieza.columna));
         nuevaPieza.fila = 0; // Aparece en la fila 0
-    
+
         // Verificar si hay espacio para colocar la nueva pieza
         if (hayColision(nuevaPieza, arrayCasillas)) {
             finalizarJuego(); // Si ya no hay espacio para colocar la nueva pieza, termina el juego
             return;
         }
-    
-    
+
+
         // Ahora tenemos una pieza válida dentro de los límites
         setPiezaActual(nuevaPieza);
-    
+
         // Colocar la nueva pieza en el tablero
         setArrayCasillas(prevMatriz => {
             const nuevaMatriz = prevMatriz.map(fila => fila.slice()); // Copia la matriz sin borrar lo anterior
-    
+
             // Colocar la nueva pieza
             nuevaPieza.matriz.forEach((fila, indexFila) => {
                 fila.forEach((celda, indexColumna) => {
                     const filaJuego = nuevaPieza.fila + indexFila;
                     const columnaJuego = nuevaPieza.columna + indexColumna;
-    
+
                     if (filaJuego >= 0 && filaJuego < nuevaMatriz.length && columnaJuego >= 0 && columnaJuego < nuevaMatriz[0].length && celda !== 0) {
                         nuevaMatriz[filaJuego][columnaJuego] = celda; // Coloca la nueva pieza
                     }
                 });
             });
-    
+
             return nuevaMatriz; // Devuelve la nueva matriz con la pieza colocada
         });
     };
-    
+
     // Función para iniciar el movimiento de la pieza
     const iniciarMovimiento = () => {
         if (intervaloMovimiento) {
@@ -114,38 +123,38 @@ const Juego = () => {
         setPiezaActual((prevPieza) => {
             let tableroSinPieza = limpiarPieza(); // Eliminar la pieza actual del tablero
             const nuevaPieza = { ...prevPieza, columna: prevPieza.columna + 1 };
-    
+
             // Verificar colisión con el tablero limpio
             if (hayColision(nuevaPieza, tableroSinPieza)) {
                 console.log("No se puede mover hacia la derecha debido a una colisión.");
                 return prevPieza; // No mueve la pieza si hay colisión
             }
-    
+
             // Si no hay colisión, pintar la nueva posición
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
             sumarPuntos(10);
             return nuevaPieza;
         });
-    }; 
+    };
 
     const moverIzq = () => {
         setPiezaActual((prevPieza) => {
             const tableroSinPieza = limpiarPieza();
             const nuevaPieza = { ...prevPieza, columna: prevPieza.columna - 1 };
-    
+
             if (hayColision(nuevaPieza, tableroSinPieza)) {
                 console.log("No se puede mover hacia la izquierda debido a una colisión.");
                 return prevPieza;
             }
-    
+
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
             sumarPuntos(10);
             return nuevaPieza;
         });
     };
-    
+
 
     const girar = () => {
         setPiezaActual((prevPieza) => {
@@ -157,16 +166,16 @@ const Juego = () => {
             nuevaPieza.fila = prevPieza.fila;
             nuevaPieza.columna = prevPieza.columna;
             nuevaPieza.matriz = prevPieza.matriz;
-            
+
             // Girar la pieza
             nuevaPieza.girar();
-    
+
             // Verificar si la nueva rotación tiene colisión
             if (hayColision(nuevaPieza, tableroSinPieza)) {
                 console.log("No se puede girar la pieza debido a una colisión.");
                 return prevPieza; // No rota la pieza si hay colisión
             }
-    
+
             // Si no hay colisión, pintar la pieza en su nueva posición rotada
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
@@ -174,15 +183,15 @@ const Juego = () => {
             return nuevaPieza;
         });
     };
-    
+
 
     const bajar = () => {
         setPiezaActual((prevPieza) => {
             const nuevaPieza = { ...prevPieza, fila: prevPieza.fila + 1 };
-    
+
             if (hayColision(nuevaPieza, limpiarPieza())) {
                 console.log("No se puede bajar más.");
-                
+
                 setArrayCasillas((prevMatriz) => {
                     const nuevaMatriz = pintarPieza(prevPieza);
                     return verificarLineasCompletas(nuevaMatriz);
@@ -190,16 +199,16 @@ const Juego = () => {
                 insertaNuevaPieza();
                 return prevPieza;
             }
-    
+
             const nuevaMatriz = pintarPieza(nuevaPieza);
             setArrayCasillas(nuevaMatriz);
             sumarPuntos(10);
             return nuevaPieza;
         });
     };
-    
-    
-    
+
+
+
 
     const hayColision = (pieza, matrizTemporal = arrayCasillas) => {
         for (let fila = 0; fila < pieza.matriz.length; fila++) {
@@ -207,13 +216,13 @@ const Juego = () => {
                 if (pieza.matriz[fila][columna] !== 0) {
                     const filaJuego = pieza.fila + fila;
                     const columnaJuego = pieza.columna + columna;
-    
+
                     // Verificamos si la pieza está fuera de los límites del tablero
                     if (filaJuego < 0 || filaJuego >= matrizTemporal.length ||
                         columnaJuego < 0 || columnaJuego >= matrizTemporal[0].length) {
                         return true; // Colisión con los bordes
                     }
-    
+
                     // Verificamos si la casilla ya está ocupada por otra pieza
                     if (matrizTemporal[filaJuego][columnaJuego] !== 0) {
                         return true; // Colisión con otra pieza
@@ -223,9 +232,9 @@ const Juego = () => {
         }
         return false; // No hay colisión
     };
-    
-    
-     
+
+
+
 
     // Control de teclas
     useEffect(() => {
@@ -287,38 +296,58 @@ const Juego = () => {
             // Si la fila contiene al menos un 0, se conserva (no está completa)
             return fila.some(celda => celda === 0);
         });
-    
+
         // Calcula cuántas filas se eliminaron
         let lineasEliminadas = matriz.length - nuevasFilas.length;
-    
+
         const crearFilaBorde = () => {
             const numColumnas = matriz[0].length;
             const fila = new Array(numColumnas).fill(0);
             fila[0] = 1;
             fila[numColumnas - 1] = 1;
             return fila;
-          };
-        
-          // Por cada línea eliminada, se añade una nueva fila de borde al principio
-          for (let i = 0; i < lineasEliminadas; i++) {
+        };
+
+        // Por cada línea eliminada, se añade una nueva fila de borde al principio
+        for (let i = 0; i < lineasEliminadas; i++) {
             nuevasFilas.unshift(crearFilaBorde());
-          }
-    
+        }
+
         return nuevasFilas; // Retorna la matriz modificada
     };
 
-    return(
+    return (
         <div className="container mt-5">
-            <h2 className="text-center border border-primary rounded p-3 mt-4 mb-4 bg-light">Aquí va el juego</h2>
-            {gameOver && <h2 className="text-center text-danger">¡Game Over!</h2>}
-            <Panel matriz={arrayCasillas}/>
-            <button className="btn btn-primary mt-3" onClick={iniciarMovimiento}>JUGAR</button>
-            <button className="btn btn-primary mt-3" onClick={insertaNuevaPieza}>Insertar Nueva Pieza</button>
-            <button className="btn btn-danger mt-3" onClick={reiniciarJuego}>Reiniciar Juego</button>
-            <div className="mt-4 text-center">
-                <h3>Puntos: {puntos}</h3> {/* Mostrar los puntos */}
+    <h2 className="text-center border border-primary rounded p-3 mt-4 mb-4 bg-light">Aquí va el juego</h2>
+    {gameOver && <h2 className="text-center text-danger">¡Game Over!</h2>}
+    <div className="mt-4">
+        <h4>Siguientes piezas:</h4>
+        <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+    {colaPiezas.map((pieza, index) => (
+        <div key={index}>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${pieza.matriz[0].length}, 20px)` }}>
+                {pieza.matriz.map((fila, i) =>
+                    fila.map((celda, j) => (
+                        <div key={`${i}-${j}`} style={{
+                            width: '20px',
+                            height: '20px',
+                            border: '1px solid #222',
+                        }} className={celda === 0 ? 'bg-white' : colorPieza(celda)} />
+                    ))
+                )}
             </div>
         </div>
+    ))}
+</div>
+    </div>
+    <Panel matriz={arrayCasillas} />
+    <button className="btn btn-primary mt-3" onClick={iniciarMovimiento}>JUGAR</button>
+    <button className="btn btn-primary mt-3" onClick={insertaNuevaPieza}>Insertar Nueva Pieza</button>
+    <button className="btn btn-danger mt-3" onClick={reiniciarJuego}>Reiniciar Juego</button>
+    <div className="mt-4 text-center">
+        <h3>Puntos: {puntos}</h3> {/* Mostrar los puntos */}
+    </div>
+</div>
     );
 };
 
