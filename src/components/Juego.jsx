@@ -3,12 +3,13 @@ import Panel from "./Panel";
 import { useState, useEffect } from 'react';
 import modelos from "../lib/modelos";
 import modeloPieza from '../lib/modeloPieza';
-import {colorPieza} from "../lib/funciones";
+import { colorPieza } from "../lib/funciones";
 
 const Juego = () => {
     const [arrayCasillas, setArrayCasillas] = useState(modelos.matriz);
     const [piezaActual, setPiezaActual] = useState(() => new modeloPieza());
     const [colaPiezas, setColaPiezas] = useState([new modeloPieza(), new modeloPieza(), new modeloPieza()])
+    const [piezaGuardada, setPiezaGuardada] = useState(null);
     const [intervaloMovimiento, setIntervaloMovimiento] = useState(null);
     const [jugando, setJugando] = useState(false);
     const [puntos, setPuntos] = useState(0);
@@ -233,10 +234,6 @@ const Juego = () => {
         return false; // No hay colisión
     };
 
-
-
-
-    // Control de teclas
     useEffect(() => {
         const controlTeclas = (event) => {
             if (gameOver) return;
@@ -253,19 +250,18 @@ const Juego = () => {
                 case "ArrowUp":
                     girar();
                     break;
+                case " ": // Tecla espacio
+                    guardarPieza();
+                    break;
                 default:
                     break;
             }
         };
-
-        // Agregar el eventListener para keydown
         window.addEventListener('keydown', controlTeclas);
-
-        // Cleanup: eliminar el eventListener cuando el componente se desmonte
         return () => {
             window.removeEventListener('keydown', controlTeclas);
         };
-    }, [piezaActual, arrayCasillas]);
+    }, [piezaActual, arrayCasillas, piezaGuardada]);
 
     const reiniciarJuego = () => {
         setArrayCasillas(modelos.matriz); // Reinicia el tablero
@@ -316,38 +312,86 @@ const Juego = () => {
         return nuevasFilas; // Retorna la matriz modificada
     };
 
+    const guardarPieza = () => {
+        setArrayCasillas(prevMatriz => limpiarPieza()); // 1. Limpiar la pieza del tablero
+        
+        if (!piezaGuardada) {
+            // 2. Si no hay una pieza guardada, guardamos la actual
+            setPiezaGuardada(piezaActual);
+            insertaNuevaPieza(); // Insertamos una nueva pieza para continuar el juego
+        } else {
+            // 3. Si ya hay una pieza guardada, intercambiamos con la pieza actual
+            setPiezaActual(prevPieza => {
+                const nuevaPieza = { ...piezaGuardada }; // Tomamos la pieza guardada
+                
+                // 4. Mantener la posición de la pieza actual
+                nuevaPieza.fila = prevPieza.fila;
+                nuevaPieza.columna = prevPieza.columna;
+    
+                // 5. Verificar colisión antes de colocarla
+                if (hayColision(nuevaPieza, limpiarPieza())) {
+                    console.log("No se puede intercambiar, hay colisión.");
+                    return prevPieza; // No se intercambia si hay colisión
+                }
+    
+                // 6. Intercambiamos y pintamos la pieza en el tablero
+                setPiezaGuardada(prevPieza);
+                setArrayCasillas(pintarPieza(nuevaPieza));
+                return nuevaPieza;
+            });
+        }
+    };
+
     return (
         <div className="container mt-5">
-    <h2 className="text-center border border-primary rounded p-3 mt-4 mb-4 bg-light">Aquí va el juego</h2>
-    {gameOver && <h2 className="text-center text-danger">¡Game Over!</h2>}
-    <div className="mt-4">
-        <h4>Siguientes piezas:</h4>
-        <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-    {colaPiezas.map((pieza, index) => (
-        <div key={index}>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${pieza.matriz[0].length}, 20px)` }}>
-                {pieza.matriz.map((fila, i) =>
-                    fila.map((celda, j) => (
-                        <div key={`${i}-${j}`} style={{
-                            width: '20px',
-                            height: '20px',
-                            border: '1px solid #222',
-                        }} className={celda === 0 ? 'bg-white' : colorPieza(celda)} />
-                    ))
+            <h2 className="text-center border border-primary rounded p-3 mt-4 mb-4 bg-light">Aquí va el juego</h2>
+            {gameOver && <h2 className="text-center text-danger">¡Game Over!</h2>}
+            <div className="mt-4 text-center">
+                <h4>Pieza Guardada:</h4>
+                {piezaGuardada ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${piezaGuardada.matriz[0].length}, 20px)` }}>
+                        {piezaGuardada.matriz.map((fila, i) =>
+                            fila.map((celda, j) => (
+                                <div key={`${i}-${j}`} style={{
+                                    width: '20px',
+                                    height: '20px',
+                                    border: '1px solid #222',
+                                }} className={celda === 0 ? 'bg-white' : colorPieza(celda)} />
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    <p>No hay pieza guardada</p>
                 )}
             </div>
+            <div className="mt-4">
+                <h4>Siguientes piezas:</h4>
+                <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                    {colaPiezas.map((pieza, index) => (
+                        <div key={index}>
+                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${pieza.matriz[0].length}, 20px)` }}>
+                                {pieza.matriz.map((fila, i) =>
+                                    fila.map((celda, j) => (
+                                        <div key={`${i}-${j}`} style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            border: '1px solid #222',
+                                        }} className={celda === 0 ? 'bg-white' : colorPieza(celda)} />
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <Panel matriz={arrayCasillas} />
+            <button className="btn btn-primary mt-3" onClick={iniciarMovimiento}>JUGAR</button>
+            <button className="btn btn-primary mt-3" onClick={insertaNuevaPieza}>Insertar Nueva Pieza</button>
+            <button className="btn btn-danger mt-3" onClick={reiniciarJuego}>Reiniciar Juego</button>
+            <div className="mt-4 text-center">
+                <h3>Puntos: {puntos}</h3> {/* Mostrar los puntos */}
+            </div>
         </div>
-    ))}
-</div>
-    </div>
-    <Panel matriz={arrayCasillas} />
-    <button className="btn btn-primary mt-3" onClick={iniciarMovimiento}>JUGAR</button>
-    <button className="btn btn-primary mt-3" onClick={insertaNuevaPieza}>Insertar Nueva Pieza</button>
-    <button className="btn btn-danger mt-3" onClick={reiniciarJuego}>Reiniciar Juego</button>
-    <div className="mt-4 text-center">
-        <h3>Puntos: {puntos}</h3> {/* Mostrar los puntos */}
-    </div>
-</div>
     );
 };
 
