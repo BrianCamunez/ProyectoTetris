@@ -52,22 +52,6 @@ const Juego = () => {
         
         return copiaArray;
     }
-
-    // Función para verificar si hay colisión entre la pieza y el tablero
-    const fueraDeLimitesHorizontales = (pieza, arrayCasillas) => {
-        for (let fila = 0; fila < pieza.matriz.length; fila++) {
-            for (let columna = 0; columna < pieza.matriz[fila].length; columna++) {
-                if (pieza.matriz[fila][columna] !== 0) {
-                    const posicionColumna = pieza.columna + columna;
-                    // Asegúrate de que la columna no exceda los límites (bordes de las columnas)
-                    if (posicionColumna < 1 || posicionColumna >= arrayCasillas[0].length - 1) {
-                        return true;  // Está fuera del límite izquierdo o derecho (considerando los bordes)
-                    }
-                }
-            }
-        }
-        return false;  // No está fuera de los límites
-    };
     
 
     // Función para insertar una nueva pieza
@@ -75,6 +59,9 @@ const Juego = () => {
         if (jugando || gameOver) return;
     
         let nuevaPieza = new modeloPieza();
+
+        nuevaPieza.columna = Math.max(1, Math.min(arrayCasillas[0].length - nuevaPieza.matriz[0].length - 1, nuevaPieza.columna));
+        nuevaPieza.fila = 0; // Aparece en la fila 0
     
         // Verificar si hay espacio para colocar la nueva pieza
         if (hayColision(nuevaPieza, arrayCasillas)) {
@@ -82,10 +69,6 @@ const Juego = () => {
             return;
         }
     
-        // Verificamos si la pieza está dentro de los límites
-        while (fueraDeLimitesHorizontales(nuevaPieza, arrayCasillas)) {
-            nuevaPieza = new modeloPieza();  // Genera una nueva pieza
-        }
     
         // Ahora tenemos una pieza válida dentro de los límites
         setPiezaActual(nuevaPieza);
