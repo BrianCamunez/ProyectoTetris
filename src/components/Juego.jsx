@@ -13,7 +13,8 @@ const Juego = () => {
     const [intervaloMovimiento, setIntervaloMovimiento] = useState(null);
     const [jugando, setJugando] = useState(false);
     const [puntos, setPuntos] = useState(0);
-    const [lineas, setLineas] = useState(0)
+    const [lineas, setLineas] = useState(0);
+    const [nivel, setNivel] = useState(1);
     const [gameOver, setGameOver] = useState(false);
 
     // Limpiar la pieza anterior en su posición actual
@@ -60,7 +61,7 @@ const Juego = () => {
 
     // Función para insertar una nueva pieza
     const insertaNuevaPieza = () => {
-        if (jugando || gameOver) return;
+        if (gameOver) return;
 
         let nuevaPieza = colaPiezas[0];
 
@@ -106,15 +107,22 @@ const Juego = () => {
 
     // Función para iniciar el movimiento de la pieza
     const iniciarMovimiento = () => {
-        if (intervaloMovimiento) {
-            clearInterval(intervaloMovimiento);
+        if (!jugando && !gameOver) {
+            setJugando(true);
         }
-        const nuevoIntervalo = setInterval(() => {
-            bajar(); // Mover la pieza hacia abajo cada segundo
-        }, 1000);
-        setIntervaloMovimiento(nuevoIntervalo);
-        setJugando(true); // Activamos el estado "jugando"
     };
+
+    // useEffect para manejar el intervalo del movimiento automático
+    useEffect(() => {
+        if (jugando) {
+            const delay = Math.max(100, 1000 - (nivel - 1) * 100);
+            const intervalo = setInterval(() => {
+                bajar();
+            }, delay);
+
+            return () => clearInterval(intervalo); // Limpia el intervalo al desmontar
+        }
+    }, [jugando, piezaActual]); // Se ejecuta cada vez que la pieza cambia
 
     const sumarPuntos = (cantidad) => {
         setPuntos((prevPuntos) => prevPuntos + cantidad); // Sumamos los puntos recibidos
@@ -185,7 +193,6 @@ const Juego = () => {
         });
     };
 
-
     const bajar = () => {
         setPiezaActual((prevPieza) => {
             const nuevaPieza = { ...prevPieza, fila: prevPieza.fila + 1 };
@@ -207,9 +214,6 @@ const Juego = () => {
             return nuevaPieza;
         });
     };
-
-
-
 
     const hayColision = (pieza, matrizTemporal = arrayCasillas) => {
         for (let fila = 0; fila < pieza.matriz.length; fila++) {
@@ -271,19 +275,15 @@ const Juego = () => {
         setJugando(false);
     };
 
+    // Función para finalizar el juego
     const finalizarJuego = () => {
-        if (!gameOver) {
-            setJugando(false);
-            if (intervaloMovimiento) clearInterval(intervaloMovimiento);
-            setIntervaloMovimiento(null);
-            setGameOver(true);
-            alert("¡Game Over! No hay más espacio para nuevas piezas.");
-        }
+        setJugando(false);
+        setGameOver(true);
+        alert("¡Game Over! No hay más espacio para nuevas piezas.");
     };
 
     const verificarLineasCompletas = (matriz) => {
-        // Filtra la matriz: elimina la fila si está completa (sin 0)
-        // excepto cuando la fila está compuesta únicamente de 1.
+        // Filtra la matriz: elimina la fila si está completa (sin 0) excepto cuando la fila está compuesta únicamente de 1.
         let nuevasFilas = matriz.filter(fila => {
             // Si la fila es completamente 1, se conserva
             if (fila.every(celda => celda === 1)) {
@@ -295,6 +295,16 @@ const Juego = () => {
 
         // Calcula cuántas filas se eliminaron
         let lineasEliminadas = matriz.length - nuevasFilas.length;
+
+        if (lineasEliminadas > 0) {
+            // Actualiza el contador de líneas y el nivel basado en el total de líneas eliminadas
+            setLineas(prevLineas => {
+                const newTotal = prevLineas + lineasEliminadas;
+                // Cada 5 líneas eliminadas se incrementa el nivel
+                setNivel(Math.floor(newTotal / 5) + 1);
+                return newTotal;
+            });
+        }
 
         const crearFilaBorde = () => {
             const numColumnas = matriz[0].length;
@@ -314,7 +324,7 @@ const Juego = () => {
 
     const guardarPieza = () => {
         setArrayCasillas(prevMatriz => limpiarPieza()); // 1. Limpiar la pieza del tablero
-        
+
         if (!piezaGuardada) {
             // 2. Si no hay una pieza guardada, guardamos la actual
             setPiezaGuardada(piezaActual);
@@ -323,17 +333,17 @@ const Juego = () => {
             // 3. Si ya hay una pieza guardada, intercambiamos con la pieza actual
             setPiezaActual(prevPieza => {
                 const nuevaPieza = { ...piezaGuardada }; // Tomamos la pieza guardada
-                
+
                 // 4. Mantener la posición de la pieza actual
                 nuevaPieza.fila = prevPieza.fila;
                 nuevaPieza.columna = prevPieza.columna;
-    
+
                 // 5. Verificar colisión antes de colocarla
                 if (hayColision(nuevaPieza, limpiarPieza())) {
                     console.log("No se puede intercambiar, hay colisión.");
                     return prevPieza; // No se intercambia si hay colisión
                 }
-    
+
                 // 6. Intercambiamos y pintamos la pieza en el tablero
                 setPiezaGuardada(prevPieza);
                 setArrayCasillas(pintarPieza(nuevaPieza));
@@ -386,10 +396,10 @@ const Juego = () => {
             </div>
             <Panel matriz={arrayCasillas} />
             <button className="btn btn-primary mt-3" onClick={iniciarMovimiento}>JUGAR</button>
-            <button className="btn btn-primary mt-3" onClick={insertaNuevaPieza}>Insertar Nueva Pieza</button>
             <button className="btn btn-danger mt-3" onClick={reiniciarJuego}>Reiniciar Juego</button>
             <div className="mt-4 text-center">
                 <h3>Puntos: {puntos}</h3> {/* Mostrar los puntos */}
+                <h3>Nivel: {nivel}</h3>
             </div>
         </div>
     );
