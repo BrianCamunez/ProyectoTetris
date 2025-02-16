@@ -4,6 +4,9 @@ import { useState, useEffect, useContext } from 'react';
 import modelos from "../lib/modelos";
 import modeloPieza from '../lib/modeloPieza';
 import { colorPieza } from "../lib/funciones";
+import { PartidasContext } from './PartidasContext';
+import { useNavigate } from 'react-router-dom';
+
 
 const Juego = () => {
     const [arrayCasillas, setArrayCasillas] = useState(modelos.matriz);
@@ -16,6 +19,12 @@ const Juego = () => {
     const [lineas, setLineas] = useState(0);
     const [nivel, setNivel] = useState(1);
     const [gameOver, setGameOver] = useState(false);
+
+    const navigate = useNavigate();
+
+    const [nombre, setNombre] = useState(''); // Nuevo estado para el nickname
+    const [formulario, setFormulario] = useState(false);
+    const { registraPartida } = useContext(PartidasContext);
 
     // Limpiar la pieza anterior en su posición actual
     function limpiarPieza() {
@@ -279,8 +288,28 @@ const Juego = () => {
     const finalizarJuego = () => {
         setJugando(false);
         setGameOver(true);
-        alert("¡Game Over! No hay más espacio para nuevas piezas.");
+        setFormulario(true)
     };
+
+    const mirarNombre = (evento) => {
+        setNombre(evento.target.value)
+    }
+
+    const guardarPartida = () => {
+        const partida ={
+            nombre,
+            puntos,
+            lineas,
+            nivel,
+            fecha: new Date().toLocaleDateString("es-ES"),
+        }
+
+        registraPartida(partida)
+        setFormulario(false)
+
+        navigate('/partidas');
+
+    }
 
     const verificarLineasCompletas = (matriz) => {
         // Filtra la matriz: elimina la fila si está completa (sin 0) excepto cuando la fila está compuesta únicamente de 1.
@@ -356,6 +385,21 @@ const Juego = () => {
         <div className="container mt-5">
             <h2 className="text-center border border-primary rounded p-3 mt-4 mb-4 bg-light">Aquí va el juego</h2>
             {gameOver && <h2 className="text-center text-danger">¡Game Over!</h2>}
+            {/* Formulario para el nombre al terminar el juego */}
+            {formulario && (
+                <div className="mt-4 text-center">
+                    <input
+                        type="text"
+                        placeholder="Ingresa tu nickname"
+                        value={nombre}
+                        onChange={mirarNombre}
+                        className="form-control mb-2"
+                    />
+                    <button onClick={guardarPartida} className="btn btn-success">
+                        Guardar Partida
+                    </button>
+                </div>
+            )}
             <div className="mt-4 text-center">
                 <h4>Pieza Guardada:</h4>
                 {piezaGuardada ? (
