@@ -10,6 +10,7 @@ const Juego = () => {
     const [intervaloMovimiento, setIntervaloMovimiento] = useState(null);
     const [jugando, setJugando] = useState(false);
     const [puntos, setPuntos] = useState(0); 
+    const [lineas,setLineas]= useState(0)
     const [gameOver, setGameOver] = useState(false);
 
     // Limpiar la pieza anterior en su posición actual
@@ -184,7 +185,7 @@ const Juego = () => {
                 
                 setArrayCasillas((prevMatriz) => {
                     const nuevaMatriz = pintarPieza(prevPieza);
-                    return nuevaMatriz;
+                    return verificarLineasCompletas(nuevaMatriz);
                 });
                 insertaNuevaPieza();
                 return prevPieza;
@@ -273,6 +274,37 @@ const Juego = () => {
             setGameOver(true);
             alert("¡Game Over! No hay más espacio para nuevas piezas.");
         }
+    };
+
+    const verificarLineasCompletas = (matriz) => {
+        // Filtra la matriz: elimina la fila si está completa (sin 0)
+        // excepto cuando la fila está compuesta únicamente de 1.
+        let nuevasFilas = matriz.filter(fila => {
+            // Si la fila es completamente 1, se conserva
+            if (fila.every(celda => celda === 1)) {
+                return true;
+            }
+            // Si la fila contiene al menos un 0, se conserva (no está completa)
+            return fila.some(celda => celda === 0);
+        });
+    
+        // Calcula cuántas filas se eliminaron
+        let lineasEliminadas = matriz.length - nuevasFilas.length;
+    
+        const crearFilaBorde = () => {
+            const numColumnas = matriz[0].length;
+            const fila = new Array(numColumnas).fill(0);
+            fila[0] = 1;
+            fila[numColumnas - 1] = 1;
+            return fila;
+          };
+        
+          // Por cada línea eliminada, se añade una nueva fila de borde al principio
+          for (let i = 0; i < lineasEliminadas; i++) {
+            nuevasFilas.unshift(crearFilaBorde());
+          }
+    
+        return nuevasFilas; // Retorna la matriz modificada
     };
 
     return(
